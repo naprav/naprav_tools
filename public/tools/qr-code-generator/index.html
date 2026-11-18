@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Create QR codes for free. Enter a link or text, then download your QR code as a PNG image.">
+<title>Free QR Code Generator - Naprav</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fc;
+  color: #172033;
+}
+header {
+  background: white;
+  padding: 20px 7%;
+  border-bottom: 1px solid #e7eaf0;
+}
+.logo {
+  color: #2457db;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+main {
+  max-width: 850px;
+  margin: 55px auto;
+  padding: 20px;
+}
+h1 { font-size: 36px; margin-bottom: 10px; }
+.subtitle { color: #69758b; line-height: 1.6; }
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 28px;
+}
+label { font-weight: bold; font-size: 14px; display: block; margin-bottom: 10px; }
+textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  border: 1px solid #dce2ed;
+  border-radius: 10px;
+  resize: vertical;
+}
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 22px;
+}
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dce2ed;
+  border-radius: 8px;
+  background: white;
+  font-size: 15px;
+}
+button {
+  border: 0;
+  background: #2457db;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 25px;
+}
+#result {
+  display: none;
+  text-align: center;
+  margin-top: 28px;
+}
+#qr {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #e3e8f0;
+  border-radius: 10px;
+}
+#download {
+  display: inline-block;
+  margin-top: 18px;
+  background: #14804a;
+  color: white;
+  padding: 14px 26px;
+  border-radius: 9px;
+  font-weight: bold;
+  text-decoration: none;
+}
+#message { color: #b42318; margin-top: 15px; }
+.note {
+  color: #78849a;
+  font-size: 13px;
+  margin-top: 20px;
+}
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #78849a;
+}
+@media(max-width:600px) {
+  .controls { grid-template-columns: 1fr; }
+  h1 { font-size: 29px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">NAPRAV.</a>
+</header>
+
+<main>
+  <h1>QR Code Generator</h1>
+  <p class="subtitle">
+    Turn any link or text into a QR code you can download.
+    Your text is processed in your browser and is not saved by us.
+  </p>
+
+  <section class="panel">
+    <label for="text">Link or text</label>
+    <textarea id="text" placeholder="https://example.com"></textarea>
+
+    <div class="controls">
+      <div>
+        <label for="size">Image size</label>
+        <select id="size">
+          <option value="256">Small (256 px)</option>
+          <option value="512" selected>Medium (512 px)</option>
+          <option value="1024">Large (1024 px)</option>
+        </select>
+      </div>
+      <div>
+        <label for="level">Error correction</label>
+        <select id="level">
+          <option value="L">Low</option>
+          <option value="M" selected>Medium</option>
+          <option value="Q">High</option>
+          <option value="H">Highest</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="generate">Generate QR Code</button>
+    <div id="message" aria-live="polite"></div>
+
+    <div id="result">
+      <canvas id="qr"></canvas><br>
+      <a id="download" download="naprav-qr-code.png">Download PNG</a>
+    </div>
+
+    <p class="note">Tip: higher error correction makes the code easier to scan even if it gets slightly damaged, but the code becomes denser.</p>
+  </section>
+</main>
+
+<footer>© 2026 Naprav. Free tools for everyone.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
