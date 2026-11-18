@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compress JPG, PNG and WebP images for free with Naprav Image Compressor. Fast, private, and easy to use.">
+<title>Free Image Compressor - Naprav</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fc;
+  color: #172033;
+}
+header {
+  background: white;
+  padding: 20px 7%;
+  border-bottom: 1px solid #e7eaf0;
+}
+.logo {
+  color: #2457db;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+main {
+  max-width: 850px;
+  margin: 55px auto;
+  padding: 20px;
+}
+h1 { font-size: 36px; margin-bottom: 10px; }
+.subtitle { color: #69758b; line-height: 1.6; }
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 28px;
+}
+.upload {
+  display: block;
+  text-align: center;
+  padding: 45px 15px;
+  border: 2px dashed #b8c8ed;
+  border-radius: 12px;
+  background: #f8faff;
+  cursor: pointer;
+}
+.upload:hover { border-color: #2457db; }
+.upload input { display: none; }
+.upload strong { display: block; margin-bottom: 10px; }
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 25px;
+}
+label { font-weight: bold; font-size: 14px; }
+select, input[type=range] { width: 100%; margin-top: 12px; }
+select {
+  padding: 12px;
+  border: 1px solid #dce2ed;
+  border-radius: 8px;
+  background: white;
+}
+button {
+  border: 0;
+  background: #2457db;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:disabled { opacity: .5; cursor: not-allowed; }
+#compress {
+  width: 100%;
+  margin-top: 25px;
+}
+#download {
+  display: none;
+  width: 100%;
+  margin-top: 15px;
+  text-align: center;
+  text-decoration: none;
+  background: #14804a;
+  color: white;
+  padding: 14px;
+  border-radius: 9px;
+  font-weight: bold;
+}
+#preview {
+  display: none;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  margin-top: 20px;
+  border-radius: 10px;
+  background: #f1f3f7;
+}
+#result {
+  margin-top: 20px;
+  line-height: 1.8;
+  color: #37445b;
+}
+.note {
+  color: #78849a;
+  font-size: 13px;
+  margin-top: 20px;
+}
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #78849a;
+}
+@media(max-width:600px) {
+  .controls { grid-template-columns: 1fr; }
+  h1 { font-size: 29px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">NAPRAV.</a>
+</header>
+
+<main>
+  <h1>Image Compressor</h1>
+  <p class="subtitle">
+    Compress images online for free. Reduce file sizes while
+    maintaining good image quality. Your images stay on your device.
+  </p>
+
+  <section class="panel">
+    <label class="upload" for="imageInput">
+      <strong>📁 Choose an image</strong>
+      Click here to upload JPG, PNG or WebP
+      <p class="note">Maximum input size: 20 MB</p>
+      <input type="file" id="imageInput"
+        accept="image/jpeg,image/png,image/webp">
+    </label>
+
+    <img id="preview" alt="Image preview">
+
+    <div class="controls">
+      <div>
+        <label for="quality">Compression quality:
+          <span id="qualityValue">70%</span>
+        </label>
+        <input type="range" id="quality"
+          min="10" max="100" value="70">
+      </div>
+
+      <div>
+        <label for="format">Output format</label>
+        <select id="format">
+          <option value="image/webp">WebP</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/png">PNG</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="compress" disabled>Compress Image</button>
+    <div id="result" aria-live="polite"></div>
+    <a id="download" download="naprav-compressed.webp">
+      Download Compressed Image
+    </a>
+
+    <p class="note">
+      Privacy friendly: image processing happens locally in your browser.
+      Your image is not uploaded to our server.
+    </p>
+  </section>
+</main>
+
+<footer>© 2026 Naprav. Free tools for everyone.</footer>
+
+<script>
+const input = document.getElementById("imageInput");
+const preview = document.getElementById("preview");
+const quality = document.getElementById("quality");
+const qualityValue = document.getElementById("qualityValue");
+const format = document.getElementById("format");
+const compress = document.getElementById("compress");
+const result = document.getElementById("result");
+const download = document.getElementById("download");
+
+let selectedFile = null;
+let originalURL = null;
+let compressedURL = null;
+
+quality.addEventListener("input", () => {
+  qualityValue.textContent = quality.value + "%";
+});
+
+input.addEventListener("change", () => {
+  selectedFile = input.files[0];
+  result.textContent = "";
+  download.style.display = "none";
+  compress.disabled = true;
+
+  if (compressedURL) URL.revokeObjectURL(compressedURL);
+  compressedURL = null;
+
+  if (!selectedFile) return;
+
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!allowed.includes(selectedFile.type)) {
+    result.textContent = "Please select a JPG, PNG or WebP image.";
+    return;
+  }
+
+  if (selectedFile.size > 20 * 1024 * 1024) {
+    result.textContent = "Image is too large. Maximum size is 20 MB.";
+    return;
+  }
+
+  if (originalURL) URL.revokeObjectURL(originalURL);
+  originalURL = URL.createObjectURL(selectedFile);
+
+  preview.src = originalURL;
+  preview.style.display = "block";
+  compress.disabled = false;
+
+  result.textContent =
+    "Original size: " + (selectedFile.size / 1024).toFixed(1) + " KB";
+});
+
+compress.addEventListener("click", async () => {
+  if (!selectedFile) return;
+
+  compress.disabled = true;
+  compress.textContent = "Compressing...";
+  download.style.display = "none";
+  result.textContent = "Processing your image...";
+
+  try {
+    const image = new Image();
+    image.src = originalURL;
+
+    await image.decode();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0);
+
+    const selectedFormat = format.value;
+    const mime = selectedFormat === "image/png"
+      ? "image/png" : selectedFormat;
+
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        data => data ? resolve(data) : reject(
+          new Error("Image conversion failed.")
+        ),
+        mime,
+        Number(quality.value) / 100
+      );
+    });
+
+    if (compressedURL) URL.revokeObjectURL(compressedURL);
+    compressedURL = URL.createObjectURL(blob);
+
+    const originalKB = selectedFile.size / 1024;
+    const compressedKB = blob.size / 1024;
+    const saved = (1 - blob.size / selectedFile.size) * 100;
+
+    result.innerHTML =
+      "<strong>Compression complete!</strong><br>" +
+      "Original: " + originalKB.toFixed(1) + " KB<br>" +
+      "Compressed: " + compressedKB.toFixed(1) + " KB<br>" +
+      (saved > 0
+        ? "Space saved: " + saved.toFixed(1) + "%"
+        : "The converted image is larger than the original.");
+
+    const extension = mime === "image/jpeg" ? "jpg" :
+      mime === "image/png" ? "png" : "webp";
+
+    download.href = compressedURL;
+    download.download = "naprav-compressed." + extension;
+    download.style.display = "block";
+
+  } catch (error) {
+    result.textContent = "Something went wrong: " + error.message;
+  } finally {
+    compress.disabled = false;
+    compress.textContent = "Compress Image";
+  }
+});
+</script>
+</body>
+</html>
