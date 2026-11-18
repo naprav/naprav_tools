@@ -165,3 +165,69 @@ footer {
 <footer>© 2026 Naprav. Free tools for everyone.</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const textBox = document.getElementById("text");
+const sizeSel = document.getElementById("size");
+const levelSel = document.getElementById("level");
+const message = document.getElementById("message");
+const result = document.getElementById("result");
+const canvas = document.getElementById("qr");
+const download = document.getElementById("download");
+
+document.getElementById("generate").addEventListener("click", () => {
+  message.textContent = "";
+  result.style.display = "none";
+
+  const value = textBox.value.trim();
+  if (!value) {
+    message.textContent = "Please enter a link or some text first.";
+    return;
+  }
+
+  if (typeof qrcode === "undefined") {
+    message.textContent = "The QR library did not load. Please refresh the page and try again.";
+    return;
+  }
+
+  try {
+    if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs["UTF-8"]) {
+      qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+    }
+
+    const qr = qrcode(0, levelSel.value);
+    qr.addData(value);
+    qr.make();
+
+    const count = qr.getModuleCount();
+    const margin = 4;
+    const total = count + margin * 2;
+    const size = Number(sizeSel.value);
+    const cell = Math.floor(size / total);
+    const pixels = cell * total;
+
+    canvas.width = pixels;
+    canvas.height = pixels;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, pixels, pixels);
+    ctx.fillStyle = "#000000";
+
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect((c + margin) * cell, (r + margin) * cell, cell, cell);
+        }
+      }
+    }
+
+    canvas.style.width = Math.min(pixels, 360) + "px";
+    download.href = canvas.toDataURL("image/png");
+    result.style.display = "block";
+  } catch (error) {
+    message.textContent = "That text is too long for a QR code. Please shorten it or lower the error correction.";
+  }
+});
+</script>
+</body>
+</html>
