@@ -119,7 +119,7 @@ footer {
     <div class="stats">
       <div class="stat"><strong id="words">0</strong><span>Words</span></div>
       <div class="stat"><strong id="chars">0</strong><span>Characters</span></div>
-      <div class="stat"><strong id="charsNoSpace">0</strong><span>No spaces</span></div>
+      <div class="stat"><strong id="spaces">0</strong><span>Spaces</span></div>
       <div class="stat"><strong id="sentences">0</strong><span>Sentences</span></div>
     </div>
 
@@ -147,8 +147,8 @@ function update() {
   document.getElementById("words").textContent =
     trimmed ? trimmed.split(/\s+/).length : 0;
   document.getElementById("chars").textContent = value.length;
-  document.getElementById("charsNoSpace").textContent =
-    value.replace(/\s/g, "").length;
+  document.getElementById("spaces").textContent =
+    (value.match(/ /g) || []).length;
   document.getElementById("sentences").textContent =
     trimmed ? (trimmed.match(/[^.!?]+[.!?]*/g) || []).filter(s => s.trim()).length : 0;
 }
