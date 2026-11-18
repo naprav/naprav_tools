@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Free word counter, character counter and case converter. Fast, private and easy to use.">
+<title>Free Text Toolkit - Naprav</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fc;
+  color: #172033;
+}
+header {
+  background: white;
+  padding: 20px 7%;
+  border-bottom: 1px solid #e7eaf0;
+}
+.logo {
+  color: #2457db;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+main {
+  max-width: 850px;
+  margin: 55px auto;
+  padding: 20px;
+}
+h1 { font-size: 36px; margin-bottom: 10px; }
+.subtitle { color: #69758b; line-height: 1.6; }
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 28px;
+}
+textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 16px;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  border: 1px solid #dce2ed;
+  border-radius: 10px;
+  resize: vertical;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+.stat {
+  background: #f8faff;
+  border: 1px solid #e3e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.stat strong {
+  display: block;
+  font-size: 26px;
+  color: #2457db;
+}
+.stat span { font-size: 13px; color: #69758b; }
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+button {
+  border: 0;
+  background: #2457db;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button.secondary { background: #e8eefc; color: #2457db; }
+.note {
+  color: #78849a;
+  font-size: 13px;
+  margin-top: 20px;
+}
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #78849a;
+}
+@media(max-width:600px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  h1 { font-size: 29px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">NAPRAV.</a>
+</header>
+
+<main>
+  <h1>Text Toolkit</h1>
+  <p class="subtitle">
+    Count words and characters, and change the case of your text.
+    Everything happens in your browser. Your text is never uploaded.
+  </p>
+
+  <section class="panel">
+    <textarea id="text" placeholder="Type or paste your text here..."></textarea>
+
+    <div class="stats">
+      <div class="stat"><strong id="words">0</strong><span>Words</span></div>
+      <div class="stat"><strong id="chars">0</strong><span>Characters</span></div>
+      <div class="stat"><strong id="charsNoSpace">0</strong><span>No spaces</span></div>
+      <div class="stat"><strong id="sentences">0</strong><span>Sentences</span></div>
+    </div>
+
+    <div class="buttons">
+      <button id="upper">UPPERCASE</button>
+      <button id="lower">lowercase</button>
+      <button id="title">Title Case</button>
+      <button id="sentence">Sentence case</button>
+      <button id="copy" class="secondary">Copy text</button>
+      <button id="clear" class="secondary">Clear</button>
+    </div>
+
+    <p class="note">Privacy friendly: your text stays on your device.</p>
+  </section>
+</main>
+
+<footer>© 2026 Naprav. Free tools for everyone.</footer>
+
+<script>
+const text = document.getElementById("text");
+
+function update() {
+  const value = text.value;
+  const trimmed = value.trim();
+  document.getElementById("words").textContent =
+    trimmed ? trimmed.split(/\s+/).length : 0;
+  document.getElementById("chars").textContent = value.length;
+  document.getElementById("charsNoSpace").textContent =
+    value.replace(/\s/g, "").length;
+  document.getElementById("sentences").textContent =
+    trimmed ? (trimmed.match(/[^.!?]+[.!?]*/g) || []).filter(s => s.trim()).length : 0;
+}
+
+text.addEventListener("input", update);
+
+document.getElementById("upper").onclick = () => {
+  text.value = text.value.toUpperCase();
+  update();
+};
+
+document.getElementById("lower").onclick = () => {
+  text.value = text.value.toLowerCase();
+  update();
+};
+
+document.getElementById("title").onclick = () => {
+  text.value = text.value.toLowerCase()
+    .replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase());
+  update();
+};
+
+document.getElementById("sentence").onclick = () => {
+  text.value = text.value.toLowerCase()
+    .replace(/(^\s*|[.!?]\s+)(\S)/g, (m, a, b) => a + b.toUpperCase());
+  update();
+};
+
+document.getElementById("copy").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(text.value);
+    const btn = document.getElementById("copy");
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy text", 1500);
+  } catch (e) {
+    text.select();
+    document.execCommand("copy");
+  }
+};
+
+document.getElementById("clear").onclick = () => {
+  text.value = "";
+  update();
+  text.focus();
+};
+</script>
+</body>
+</html>
