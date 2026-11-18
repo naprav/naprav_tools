@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Merge PDF files or extract pages from a PDF for free. Fast and private, your files never leave your device.">
+<title>Free PDF Toolkit - Naprav</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fc;
+  color: #172033;
+}
+header {
+  background: white;
+  padding: 20px 7%;
+  border-bottom: 1px solid #e7eaf0;
+}
+.logo {
+  color: #2457db;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+main {
+  max-width: 850px;
+  margin: 55px auto;
+  padding: 20px;
+}
+h1 { font-size: 36px; margin-bottom: 10px; }
+h2 { margin-top: 0; }
+.subtitle { color: #69758b; line-height: 1.6; }
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 28px;
+}
+.upload {
+  display: block;
+  text-align: center;
+  padding: 35px 15px;
+  border: 2px dashed #b8c8ed;
+  border-radius: 12px;
+  background: #f8faff;
+  cursor: pointer;
+}
+.upload:hover { border-color: #2457db; }
+.upload input { display: none; }
+.upload strong { display: block; margin-bottom: 8px; }
+label.field { font-weight: bold; font-size: 14px; display: block; margin: 20px 0 10px; }
+input[type=text] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #dce2ed;
+  border-radius: 8px;
+}
+.file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e3e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: #fcfdff;
+}
+.file .name { flex: 1; font-size: 14px; word-break: break-all; }
+.file .size { color: #78849a; font-size: 13px; }
+.file button {
+  width: auto;
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: #e8eefc;
+  color: #2457db;
+}
+button {
+  border: 0;
+  background: #2457db;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:disabled { opacity: .5; cursor: not-allowed; }
+.main-btn { width: 100%; margin-top: 22px; }
+.msg { margin-top: 18px; line-height: 1.6; color: #37445b; }
+.msg.error { color: #b42318; }
+.dl {
+  display: none;
+  margin-top: 15px;
+  text-align: center;
+  text-decoration: none;
+  background: #14804a;
+  color: white;
+  padding: 14px;
+  border-radius: 9px;
+  font-weight: bold;
+}
+.note {
+  color: #78849a;
+  font-size: 13px;
+  margin-top: 20px;
+}
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #78849a;
+}
+@media(max-width:600px) {
+  h1 { font-size: 29px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">NAPRAV.</a>
+</header>
+
+<main>
+  <h1>PDF Toolkit</h1>
+  <p class="subtitle">
+    Merge several PDFs into one, or extract pages from a PDF.
+    Everything happens in your browser. Your files are never uploaded.
+  </p>
+
+  <section class="panel">
+    <h2>Merge PDFs</h2>
+    <label class="upload" for="mergeInput">
+      <strong>📁 Choose PDF files</strong>
+      Click here and select two or more PDFs
+      <input type="file" id="mergeInput" accept="application/pdf" multiple>
+    </label>
+    <div id="mergeList"></div>
+    <button class="main-btn" id="mergeBtn" disabled>Merge PDFs</button>
+    <div class="msg" id="mergeMsg" aria-live="polite"></div>
+    <a class="dl" id="mergeDownload" download="naprav-merged.pdf">Download Merged PDF</a>
+  </section>
+
+  <section class="panel">
+    <h2>Extract pages</h2>
+    <label class="upload" for="splitInput">
+      <strong>📁 Choose a PDF file</strong>
+      Click here and select one PDF
+      <input type="file" id="splitInput" accept="application/pdf">
+    </label>
+    <div class="msg" id="splitInfo"></div>
+    <label class="field" for="ranges">Pages to extract</label>
+    <input type="text" id="ranges" placeholder="Example: 1-3, 5, 8-10">
+    <button class="main-btn" id="splitBtn" disabled>Extract Pages</button>
+    <div class="msg" id="splitMsg" aria-live="polite"></div>
+    <a class="dl" id="splitDownload" download="naprav-extracted.pdf">Download Extracted PDF</a>
+    <p class="note">Privacy friendly: your PDFs stay on your device.</p>
+  </section>
+</main>
+
+<footer>© 2026 Naprav. Free tools for everyone.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+const { PDFDocument } = PDFLib;
+
+function fmt(b) {
+  return b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : (b / 1024).toFixed(1) + " KB";
+}
+
+/* ---------- MERGE ---------- */
+const mergeInput = document.getElementById("mergeInput");
+const mergeList = document.getElementById("mergeList");
+const mergeBtn = document.getElementById("mergeBtn");
+const mergeMsg = document.getElementById("mergeMsg");
+const mergeDownload = document.getElementById("mergeDownload");
+let mergeFiles = [];
+let mergeURL = null;
+
+function drawMergeList() {
+  mergeList.innerHTML = "";
+  mergeFiles.forEach((f, i) => {
+    const row = document.createElement("div");
+    row.className = "file";
+
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = (i + 1) + ". " + f.name;
+
+    const size = document.createElement("span");
+    size.className = "size";
+    size.textContent = fmt(f.size);
+
+    const up = document.createElement("button");
+    up.textContent = "↑";
+    up.disabled = i === 0;
+    up.onclick = () => {
+      [mergeFiles[i - 1], mergeFiles[i]] = [mergeFiles[i], mergeFiles[i - 1]];
+      drawMergeList();
+    };
+
+    const rm = document.createElement("button");
+    rm.textContent = "Remove";
+    rm.onclick = () => {
+      mergeFiles.splice(i, 1);
+      drawMergeList();
+    };
+
+    row.append(name, size, up, rm);
+    mergeList.appendChild(row);
+  });
+  mergeBtn.disabled = mergeFiles.length < 2;
+  mergeDownload.style.display = "none";
+}
+
+mergeInput.addEventListener("change", () => {
+  mergeMsg.textContent = "";
+  mergeMsg.className = "msg";
+  for (const f of mergeInput.files) {
+    if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
+      mergeFiles.push(f);
+    }
+  }
+  mergeInput.value = "";
+  drawMergeList();
+  if (mergeFiles.length === 1) mergeMsg.textContent = "Add at least one more PDF to merge.";
+});
+
+mergeBtn.addEventListener("click", async () => {
+  mergeBtn.disabled = true;
+  mergeBtn.textContent = "Merging...";
+  mergeMsg.className = "msg";
+  mergeMsg.textContent = "Processing your files...";
+  mergeDownload.style.display = "none";
+
+  try {
+    const out = await PDFDocument.create();
+    for (const f of mergeFiles) {
+      const bytes = await f.arrayBuffer();
+      const doc = await PDFDocument.load(bytes);
+      const pages = await out.copyPages(doc, doc.getPageIndices());
+      pages.forEach(p => out.addPage(p));
+    }
+    const data = await out.save();
+    if (mergeURL) URL.revokeObjectURL(mergeURL);
+    mergeURL = URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
+    mergeDownload.href = mergeURL;
+    mergeDownload.style.display = "block";
+    mergeMsg.textContent = "Done! " + out.getPageCount() + " pages in the merged PDF (" + fmt(data.length) + ").";
+  } catch (e) {
+    mergeMsg.className = "msg error";
+    mergeMsg.textContent = "Something went wrong. One of the files may be password protected or damaged.";
+  } finally {
+    mergeBtn.textContent = "Merge PDFs";
+    mergeBtn.disabled = mergeFiles.length < 2;
+  }
+});
+
+/* ---------- EXTRACT ---------- */
+const splitInput = document.getElementById("splitInput");
+const splitInfo = document.getElementById("splitInfo");
+const splitBtn = document.getElementById("splitBtn");
+const splitMsg = document.getElementById("splitMsg");
+const splitDownload = document.getElementById("splitDownload");
+const rangesBox = document.getElementById("ranges");
+let splitFile = null;
+let splitPages = 0;
+let splitURL = null;
+
+splitInput.addEventListener("change", async () => {
+  splitFile = splitInput.files[0];
+  splitBtn.disabled = true;
+  splitMsg.textContent = "";
+  splitMsg.className = "msg";
+  splitDownload.style.display = "none";
+  splitInfo.textContent = "";
+  if (!splitFile) return;
+
+  try {
+    const doc = await PDFDocument.load(await splitFile.arrayBuffer());
+    splitPages = doc.getPageCount();
+    splitInfo.textContent = splitFile.name + " has " + splitPages + " pages.";
+    splitBtn.disabled = false;
+  } catch (e) {
+    splitInfo.textContent = "";
+    splitMsg.className = "msg error";
+    splitMsg.textContent = "Could not read this PDF. It may be password protected or damaged.";
+  }
+});
+
+function parseRanges(text, max) {
+  const result = [];
+  const parts = text.split(",");
+  for (const part of parts) {
+    const p = part.trim();
+    if (!p) continue;
+    const m = p.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!m) return null;
+    const a = parseInt(m[1], 10);
+    const b = m[2] ? parseInt(m[2], 10) : a;
+    if (a < 1 || b < a || b > max) return null;
+    for (let i = a; i <= b; i++) result.push(i - 1);
+  }
+  return result.length ? result : null;
+}
+
+splitBtn.addEventListener("click", async () => {
+  splitMsg.className = "msg";
+  splitDownload.style.display = "none";
+
+  const indices = parseRanges(rangesBox.value, splitPages);
+  if (!indices) {
+    splitMsg.className = "msg error";
+    splitMsg.textContent = "Please enter pages like 1-3, 5, 8-10 (between 1 and " + splitPages + ").";
+    return;
+  }
+
+  splitBtn.disabled = true;
+  splitBtn.textContent = "Extracting...";
+  splitMsg.textContent = "Processing your file...";
+
+  try {
+    const src = await PDFDocument.load(await splitFile.arrayBuffer());
+    const out = await PDFDocument.create();
+    const pages = await out.copyPages(src, indices);
+    pages.forEach(p => out.addPage(p));
+    const data = await out.save();
+    if (splitURL) URL.revokeObjectURL(splitURL);
+    splitURL = URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
+    splitDownload.href = splitURL;
+    splitDownload.style.display = "block";
+    splitMsg.textContent = "Done! Extracted " + indices.length + " page(s) (" + fmt(data.length) + ").";
+  } catch (e) {
+    splitMsg.className = "msg error";
+    splitMsg.textContent = "Something went wrong while extracting the pages.";
+  } finally {
+    splitBtn.textContent = "Extract Pages";
+    splitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
