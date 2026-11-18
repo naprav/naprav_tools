@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Naprav brings you free online tools for images, PDFs, text and developers.">
+  <title>Naprav – Free Online Tools</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f8fc;
+      color: #172033;
+    }
+    header {
+      padding: 22px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border-bottom: 1px solid #e8eaf0;
+    }
+    .logo { font-size: 27px; font-weight: 800; color: #2457db; }
+    nav a {
+      margin-left: 24px;
+      text-decoration: none;
+      color: #39445a;
+      font-size: 14px;
+    }
+    .hero {
+      text-align: center;
+      padding: 85px 20px 55px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 58px);
+      margin: 0 0 18px;
+      letter-spacing: -2px;
+    }
+    .hero p { color: #68738a; font-size: 17px; }
+    .tools {
+      max-width: 1050px;
+      margin: 20px auto 80px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .tool {
+      background: white;
+      padding: 27px;
+      border: 1px solid #e7eaf1;
+      border-radius: 15px;
+    }
+    .tool .icon { font-size: 30px; }
+    .tool h2 { font-size: 19px; }
+    .tool p { color: #758096; font-size: 14px; line-height: 1.6; }
+    .status { color: #2457db; font-size: 12px; font-weight: bold; }
+    footer {
+      padding: 28px;
+      text-align: center;
+      color: #758096;
+      background: white;
+      border-top: 1px solid #e8eaf0;
+    }
+    @media(max-width: 600px) {
+      header { padding: 18px 5%; }
+      nav a { margin-left: 12px; }
+      .hero { padding-top: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NAPRAV.</div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="#tools">Tools</a>
+      <a href="#games">Games</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Useful tools. Zero hassle.</h1>
+    <p>Free online tools to make your digital life easier.</p>
+  </section>
+
+  <main class="tools" id="tools">
+    <article class="tool">
+      <div class="icon">🖼️</div>
+      <h2>Image Compressor</h2>
+      <p>Reduce image file sizes without unnecessary complexity.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+    <article class="tool">
+      <div class="icon">📄</div>
+      <h2>PDF Toolkit</h2>
+      <p>Merge and organize your PDF documents easily.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+    <article class="tool">
+      <div class="icon">▦</div>
+      <h2>QR Generator</h2>
+      <p>Create QR codes for links, text and more.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+    <article class="tool">
+      <div class="icon">✍️</div>
+      <h2>Text Toolkit</h2>
+      <p>Count words, convert text and clean formatting.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+    <article class="tool">
+      <div class="icon">{"{}"}</div>
+      <h2>Developer Toolkit</h2>
+      <p>Format JSON and use handy developer utilities.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+    <article class="tool" id="games">
+      <div class="icon">🎮</div>
+      <h2>Browser Games</h2>
+      <p>Fun little games to enjoy directly in your browser.</p>
+      <span class="status">COMING SOON</span>
+    </article>
+  </main>
+
+  <footer>© 2026 Naprav. Built to make digital life easier.</footer>
+</body>
+</html>
