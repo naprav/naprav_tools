@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Free JSON formatter and validator, Base64 encoder and decoder, and URL encoder and decoder. Fast and private, all in your browser.">
+<title>Free Developer Toolkit - Naprav</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fc;
+  color: #172033;
+}
+header {
+  background: white;
+  padding: 20px 7%;
+  border-bottom: 1px solid #e7eaf0;
+}
+.logo {
+  color: #2457db;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+main {
+  max-width: 850px;
+  margin: 55px auto;
+  padding: 20px;
+}
+h1 { font-size: 36px; margin-bottom: 10px; }
+h2 { margin-top: 0; }
+.subtitle { color: #69758b; line-height: 1.6; }
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 28px;
+}
+textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 14px;
+  font-size: 15px;
+  font-family: Consolas, Monaco, monospace;
+  border: 1px solid #dce2ed;
+  border-radius: 10px;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+button {
+  border: 0;
+  background: #2457db;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button.secondary { background: #e8eefc; color: #2457db; }
+.msg { margin-top: 14px; line-height: 1.6; color: #14804a; min-height: 20px; }
+.msg.error { color: #b42318; }
+.note {
+  color: #78849a;
+  font-size: 13px;
+  margin-top: 20px;
+}
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #78849a;
+}
+@media(max-width:600px) {
+  h1 { font-size: 29px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">NAPRAV.</a>
+</header>
+
+<main>
+  <h1>Developer Toolkit</h1>
+  <p class="subtitle">
+    Format and validate JSON, and encode or decode Base64 and URLs.
+    Everything happens in your browser. Your data is never uploaded.
+  </p>
+
+  <section class="panel">
+    <h2>JSON Formatter and Validator</h2>
+    <textarea id="jsonIn" placeholder='Paste JSON here, for example {"name":"Naprav","tools":5}'></textarea>
+    <div class="buttons">
+      <button id="jsonFormat">Format</button>
+      <button id="jsonMinify">Minify</button>
+      <button id="jsonValidate" class="secondary">Validate</button>
+      <button id="jsonCopy" class="secondary">Copy</button>
+      <button id="jsonClear" class="secondary">Clear</button>
+    </div>
+    <div class="msg" id="jsonMsg" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Base64 Encoder and Decoder</h2>
+    <textarea id="b64In" placeholder="Type or paste text here"></textarea>
+    <div class="buttons">
+      <button id="b64Encode">Encode</button>
+      <button id="b64Decode">Decode</button>
+      <button id="b64Copy" class="secondary">Copy result</button>
+      <button id="b64Clear" class="secondary">Clear</button>
+    </div>
+    <div class="msg" id="b64Msg" aria-live="polite"></div>
+    <textarea id="b64Out" placeholder="Result appears here" readonly></textarea>
+  </section>
+
+  <section class="panel">
+    <h2>URL Encoder and Decoder</h2>
+    <textarea id="urlIn" placeholder="Type or paste text or a link here"></textarea>
+    <div class="buttons">
+      <button id="urlEncode">Encode</button>
+      <button id="urlDecode">Decode</button>
+      <button id="urlCopy" class="secondary">Copy result</button>
+      <button id="urlClear" class="secondary">Clear</button>
+    </div>
+    <div class="msg" id="urlMsg" aria-live="polite"></div>
+    <textarea id="urlOut" placeholder="Result appears here" readonly></textarea>
+    <p class="note">Privacy friendly: your data stays on your device.</p>
+  </section>
+</main>
+
+<footer>© 2026 Naprav. Free tools for everyone.</footer>
+<script>
+function copyText(value, msgEl) {
+  if (!value) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Nothing to copy yet.";
+    return;
+  }
+  navigator.clipboard.writeText(value).then(() => {
+    msgEl.className = "msg";
+    msgEl.textContent = "Copied!";
+  }).catch(() => {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Could not copy. Please select the text and copy it manually.";
+  });
+}
+
+/* ---------- JSON ---------- */
+const jsonIn = document.getElementById("jsonIn");
+const jsonMsg = document.getElementById("jsonMsg");
+
+function parseJSON() {
+  const text = jsonIn.value.trim();
+  if (!text) {
+    jsonMsg.className = "msg error";
+    jsonMsg.textContent = "Please paste some JSON first.";
+    return null;
+  }
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    jsonMsg.className = "msg error";
+    jsonMsg.textContent = "Invalid JSON: " + e.message;
+    return null;
+  }
+}
+
+document.getElementById("jsonFormat").onclick = () => {
+  const data = parseJSON();
+  if (data === null && jsonIn.value.trim() !== "null") return;
+  jsonIn.value = JSON.stringify(data, null, 2);
+  jsonMsg.className = "msg";
+  jsonMsg.textContent = "Valid JSON. Formatted.";
+};
+
+document.getElementById("jsonMinify").onclick = () => {
+  const data = parseJSON();
+  if (data === null && jsonIn.value.trim() !== "null") return;
+  jsonIn.value = JSON.stringify(data);
+  jsonMsg.className = "msg";
+  jsonMsg.textContent = "Valid JSON. Minified.";
+};
+
+document.getElementById("jsonValidate").onclick = () => {
+  const data = parseJSON();
+  if (data === null && jsonIn.value.trim() !== "null") return;
+  jsonMsg.className = "msg";
+  jsonMsg.textContent = "Valid JSON.";
+};
+
+document.getElementById("jsonCopy").onclick = () => copyText(jsonIn.value, jsonMsg);
+
+document.getElementById("jsonClear").onclick = () => {
+  jsonIn.value = "";
+  jsonMsg.textContent = "";
+  jsonIn.focus();
+};
+
+/* ---------- BASE64 ---------- */
+const b64In = document.getElementById("b64In");
+const b64Out = document.getElementById("b64Out");
+const b64Msg = document.getElementById("b64Msg");
+
+document.getElementById("b64Encode").onclick = () => {
+  if (!b64In.value) {
+    b64Msg.className = "msg error";
+    b64Msg.textContent = "Please enter some text first.";
+    return;
+  }
+  try {
+    const bytes = new TextEncoder().encode(b64In.value);
+    let binary = "";
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    b64Out.value = btoa(binary);
+    b64Msg.className = "msg";
+    b64Msg.textContent = "Encoded.";
+  } catch (e) {
+    b64Msg.className = "msg error";
+    b64Msg.textContent = "Could not encode this text.";
+  }
+};
+
+document.getElementById("b64Decode").onclick = () => {
+  const value = b64In.value.trim();
+  if (!value) {
+    b64Msg.className = "msg error";
+    b64Msg.textContent = "Please enter some Base64 text first.";
+    return;
+  }
+  try {
+    const binary = atob(value);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    b64Out.value = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    b64Msg.className = "msg";
+    b64Msg.textContent = "Decoded.";
+  } catch (e) {
+    b64Msg.className = "msg error";
+    b64Msg.textContent = "That is not valid Base64 text.";
+  }
+};
+
+document.getElementById("b64Copy").onclick = () => copyText(b64Out.value, b64Msg);
+
+document.getElementById("b64Clear").onclick = () => {
+  b64In.value = "";
+  b64Out.value = "";
+  b64Msg.textContent = "";
+  b64In.focus();
+};
+
+/* ---------- URL ---------- */
+const urlIn = document.getElementById("urlIn");
+const urlOut = document.getElementById("urlOut");
+const urlMsg = document.getElementById("urlMsg");
+
+document.getElementById("urlEncode").onclick = () => {
+  if (!urlIn.value) {
+    urlMsg.className = "msg error";
+    urlMsg.textContent = "Please enter some text first.";
+    return;
+  }
+  urlOut.value = encodeURIComponent(urlIn.value);
+  urlMsg.className = "msg";
+  urlMsg.textContent = "Encoded.";
+};
+
+document.getElementById("urlDecode").onclick = () => {
+  if (!urlIn.value) {
+    urlMsg.className = "msg error";
+    urlMsg.textContent = "Please enter some text first.";
+    return;
+  }
+  try {
+    urlOut.value = decodeURIComponent(urlIn.value.replace(/\+/g, " "));
+    urlMsg.className = "msg";
+    urlMsg.textContent = "Decoded.";
+  } catch (e) {
+    urlMsg.className = "msg error";
+    urlMsg.textContent = "That text is not valid URL encoding.";
+  }
+};
+
+document.getElementById("urlCopy").onclick = () => copyText(urlOut.value, urlMsg);
+
+document.getElementById("urlClear").onclick = () => {
+  urlIn.value = "";
+  urlOut.value = "";
+  urlMsg.textContent = "";
+  urlIn.focus();
+};
+</script>
+</body>
+</html>
